@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import ShapChart from './components/ShapChart';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -20,7 +21,7 @@ function App() {
     }
   };
 
-  const handlePredict = () => {
+  const handlePredict = async () => {
     if (!selectedFile) {
       alert('Please upload a CIF file first');
       return;
@@ -34,13 +35,33 @@ function App() {
     setLoading(true);
     setResult(null);
 
-    // Simulate prediction (replace with actual API call)
-    setTimeout(() => {
-      setResult({
-        youngs_modulus: (Math.random() * 20 + 5).toFixed(2)
+    // Create FormData to send file and Miller indices
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('millerH', millerH);
+    formData.append('millerK', millerK);
+    formData.append('millerL', millerL);
+
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        body: formData,
       });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        alert(`Prediction error: ${data.error}`);
+        setLoading(false);
+        return;
+      }
+
+      setResult(data);
       setLoading(false);
-    }, 1000);
+    } catch (error) {
+      alert(`Failed to get prediction: ${error.message}`);
+      setLoading(false);
+    }
   };
 
   return (
@@ -132,6 +153,10 @@ function App() {
                 <span className="result-value">{result.youngs_modulus} GPa</span>
               </div>
             </div>
+            
+            {result.shap_values && result.shap_values.length > 0 && (
+              <ShapChart shapValues={result.shap_values} />
+            )}
           </section>
         )}
       </main>
