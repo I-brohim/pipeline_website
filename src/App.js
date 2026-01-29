@@ -105,6 +105,55 @@ function App() {
     return sorted;
   };
 
+  const downloadLogFile = () => {
+    if (!results || !selectedFile) return;
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    let logContent = `MOF Mechanical Properties Prediction Log\n`;
+    logContent += `Generated: ${new Date().toLocaleString()}\n`;
+    logContent += `Input File: ${selectedFile.name}\n`;
+    logContent += `File Size: ${(selectedFile.size / 1024).toFixed(2)} KB\n`;
+    logContent += `\n${'='.repeat(80)}\n\n`;
+
+    const sorted = getSortedResults();
+    sorted.forEach((prediction, index) => {
+      const [h, k, l] = prediction.direction;
+      logContent += `Prediction #${index + 1}\n`;
+      logContent += `Direction: [${h}, ${k}, ${l}]\n`;
+      logContent += `Young's Modulus: ${prediction.youngs_modulus} GPa\n`;
+      logContent += `\nFeature Importance (SHAP Values):\n`;
+      logContent += `${'-'.repeat(60)}\n`;
+      
+      prediction.shap_values.forEach((item, i) => {
+        const importance = item.importance >= 0 ? `+${item.importance.toFixed(4)}` : item.importance.toFixed(4);
+        logContent += `  ${(i + 1).toString().padStart(2)}. ${item.feature.padEnd(25)} ${item.value.toFixed(4).padStart(10)}  SHAP: ${importance}\n`;
+      });
+      
+      logContent += `\n${'='.repeat(80)}\n\n`;
+    });
+
+    logContent += `\nSummary Statistics:\n`;
+    logContent += `${'-'.repeat(60)}\n`;
+    const moduli = results.map(r => r.youngs_modulus);
+    const avgModulus = (moduli.reduce((a, b) => a + b, 0) / moduli.length).toFixed(2);
+    const maxModulus = Math.max(...moduli).toFixed(2);
+    const minModulus = Math.min(...moduli).toFixed(2);
+    logContent += `Average Young's Modulus: ${avgModulus} GPa\n`;
+    logContent += `Maximum Young's Modulus: ${maxModulus} GPa\n`;
+    logContent += `Minimum Young's Modulus: ${minModulus} GPa\n`;
+    logContent += `Total Predictions: ${results.length}\n`;
+
+    const blob = new Blob([logContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mof_prediction_${timestamp}.log`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handlePredict = async () => {
     if (!selectedFile) {
       alert('Please upload a CIF file first');
@@ -175,6 +224,14 @@ function App() {
             Upload a CIF file of your MOF structure to predict Young's modulus
             for all standard indentation directions.
           </p>
+          <a 
+            href="https://example.com/publication" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="publication-button"
+          >
+            Read the Publication
+          </a>
         </section>
 
         <section className="upload-section">
@@ -218,9 +275,14 @@ function App() {
           <section className="results">
             <div className="results-header">
               <h2>Predicted Properties</h2>
-              <button className="sort-button" onClick={toggleSort}>
-                Sort by Modulus {sortOrder === 'desc' ? '↓' : '↑'}
-              </button>
+              <div className="results-actions">
+                <button className="sort-button" onClick={toggleSort}>
+                  Sort by Modulus {sortOrder === 'desc' ? '↓' : '↑'}
+                </button>
+                <button className="download-button" onClick={downloadLogFile}>
+                  Download Log File
+                </button>
+              </div>
             </div>
             
             <div className="results-table">

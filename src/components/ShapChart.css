@@ -3,7 +3,7 @@
   padding: 1.5rem;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #3a3a3a;
 }
 
 .shap-chart-container h3 {
@@ -42,7 +42,7 @@
 
 .tooltip-importance {
   font-weight: 600;
-  color: #667eea;
+  color: #3a3a3a;
 }
 
 .shap-legend {
@@ -67,11 +67,11 @@
 }
 
 .legend-color.positive {
-  background-color: #f44336;
+  background-color: #4a4a4a;
 }
 
 .legend-color.negative {
-  background-color: #2196f3;
+  background-color: #8a8a8a;
 }
 
 @media (max-width: 768px) {

@@ -36,7 +36,7 @@ const ShapChart = ({ shapValues }) => {
       <h3>Feature Importance Analysis (SHAP)</h3>
       <p className="shap-description">
         Shows how each structural feature contributed to the predicted Young's Modulus.
-        Red bars increase the prediction, blue bars decrease it.
+        Dark bars increase the prediction, light bars decrease it.
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
@@ -51,7 +51,7 @@ const ShapChart = ({ shapValues }) => {
           <ReferenceLine x={0} stroke="#666" strokeWidth={2} />
           <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.importance > 0 ? '#f44336' : '#2196f3'} />
+              <Cell key={`cell-${index}`} fill={entry.importance > 0 ? '#4a4a4a' : '#8a8a8a'} />
             ))}
           </Bar>
         </BarChart>
