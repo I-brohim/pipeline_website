@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import ShapChart from './components/ShapChart';
+import StructureViewer from './components/StructureViewer';
 
 // Feature names for MOF structures
 const FEATURE_NAMES = [
@@ -64,6 +65,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
   const [expandedRows, setExpandedRows] = useState({});
+  const [selectedDirection, setSelectedDirection] = useState(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -81,6 +83,11 @@ function App() {
       ...prev,
       [index]: !prev[index]
     }));
+    // Set selected direction when expanding
+    if (!expandedRows[index]) {
+      const sorted = getSortedResults();
+      setSelectedDirection(sorted[index].direction);
+    }
   };
 
   const toggleSort = () => {
@@ -188,6 +195,13 @@ function App() {
             )}
           </div>
         </section>
+
+        {selectedFile && (
+          <StructureViewer 
+            cifFile={selectedFile} 
+            millerIndices={selectedDirection}
+          />
+        )}
 
         <button className="predict-button" onClick={handlePredict} disabled={loading}>
           {loading ? 'Predicting...' : 'Predict Properties'}
